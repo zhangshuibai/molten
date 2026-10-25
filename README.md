@@ -118,6 +118,11 @@ The engine passed mlx-lm on day 2.5 and reached 1.28x (decode 1.53x, 300+ tok/s)
 
 ![Speedup over mlx-lm over time](docs/images/progression.svg)
 
+Every new best engine, rebuilt and re-measured on the same machine, shows where the gains came from: decode speed and
+time to first token at 256 and 4K tokens of context.
+
+![Decode speed and time to first token of each new best engine](docs/images/evolution.svg)
+
 Molten and the RSI framework behind it were created and are led by [Shuibai Zhang](https://zhangshuibai.github.io/).
 Collaborators are welcome: if you are interested in this project, feel free to email szhang967@wisc.edu or
 shuibai.zhang@outlook.com.
