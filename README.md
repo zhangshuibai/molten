@@ -109,7 +109,7 @@ this loop will be open-sourced soon.
 ![The agent loop](docs/images/agent_loop.svg)
 
 The whole optimization took **under six days**. The first correct engine ran at 0.56x mlx-lm three hours in.
-The engine passed mlx-lm on day 2.5 and reached 1.28x (decode 1.53x, 300+ tok/s) on day 5.7.
+The engine passed mlx-lm on day 2.5 and reached 1.28x end-to-end (decode 1.53x, 300+ tok/s) on day 5.7.
 
 - 78 agent sessions took the engine from 0.56x to 1.25x. They cost about **$21** of DeepSeek API usage: 1.36 billion
   tokens, 98.6% of them cache hits.
