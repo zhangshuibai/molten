@@ -2,9 +2,10 @@
 
 **Run a coding model at 300+ tok/s on your Mac.**
 
-Molten is a native **Rust + Metal** inference engine for **LiquidAI LFM2.5-24B-A2B**, a 24B-parameter (2B active)
-reasoning and coding-agent model, on Apple Silicon. It runs LiquidAI's official MLX 4-bit checkpoint as one small
-executable.
+Molten is a native **Rust + Metal** inference engine for
+**[LiquidAI LFM2.5-24B-A2B](https://huggingface.co/LiquidAI/LFM2.5-24B-A2B)**, a 24B-parameter (2B active) reasoning
+and coding-agent model, on Apple Silicon. It runs LiquidAI's official
+[MLX 4-bit checkpoint](https://huggingface.co/LiquidAI/LFM2.5-24B-A2B-MLX-4bit) as one small executable.
 
 ![Decode speed on Apple M5 Max: Molten vs mlx-lm vs llama.cpp](docs/images/decode_speed.svg)
 
