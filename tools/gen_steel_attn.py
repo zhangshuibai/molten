@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+"""Generates the embedded MSL for MLX 0.32.3 steel attention (the Metal-4
+tensor-op variant) from the pinned headers in third_party/. The engine
+compiles MSL from one embedded string at run time, so the header tree is
+flattened into one source: system <...> includes are hoisted, project
+"mlx/..." includes are resolved and inlined once, in dependency order. The
+generated file is committed; rerun this script after changing the header set
+or the instantiations.
+"""
+import os, re
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MLX = os.path.join(ROOT, "third_party", "mlx-0.32.3")
+OUT_DIR = os.path.join(ROOT, "src", "kernels", "metal")
+
+INCLUDE_RE = re.compile(r'^\s*#include\s+([<"])([^>"]+)[>"]\s*$')
+
+
+def flatten(entry, prelude):
+    system_includes, body, visited = [], [], set()
+
+    def emit(path):
+        if path in visited:
+            return
+        visited.add(path)
+        with open(os.path.join(MLX, path)) as f:
+            lines = f.readlines()
+        body.append("// ---- %s\n" % path)
+        for line in lines:
+            m = INCLUDE_RE.match(line)
+            if m and m.group(1) == '<':
+                norm = line.strip()
+                if norm not in [x.strip() for x in system_includes]:
+                    system_includes.append(norm + "\n")
+            elif m:
+                emit(m.group(2))
+            elif line.strip() == '#pragma once':
+                continue
+            else:
+                body.append(line)
+        body.append("\n")
+
+    for path in prelude:
+        emit(path)
+    emit(entry)
+    return system_includes, "".join(body)
+
+
+INST_TEMPLATE = r'''
+// ---------------------------------------------------------------------------
+// Instantiations for LFM2.5: BF16, head dim 64, causal, no mask/sinks, GQA is
+// expressed through AttnParams::gqa_factor.
+using lfm_steel_attn_params = mlx::steel::AttnParams;
+using lfm_steel_attn_mask_params = mlx::steel::AttnMaskParams;
+
+#define LFM_STEEL_NAX_BODY(FN, BQ, BK, WM, WN)                                \
+template [[host_name(#FN)]] [[kernel]]                                        \
+void attention_nax<bfloat16_t, (BQ), (BK), 64, 64, (WM), (WN), float, float>( \
+    const device bfloat16_t*, const device bfloat16_t*, const device bfloat16_t*, \
+    device bfloat16_t*, const constant lfm_steel_attn_params*,                \
+    const constant lfm_steel_attn_mask_params*, const device float*,          \
+    const device bfloat16_t*, uint, uint, uint3, uint3);
+
+%(instances)s
+'''
+
+
+# The NAX attention grid is launched as (gqa group, query block, KV head)
+# instead of (query block, query head), so the four query heads that share one
+# KV head are adjacent in dispatch order and read the same K/V prefix while it
+# is still in cache. This only renames the threadgroup axes: every
+# threadgroup's Q/O rows, causal block range and arithmetic are unchanged, and
+# the kernel is already templated on the GQA factor. Both attention templates
+# in the flattened NAX header take the mapping; only the `attention_nax`
+# instantiations are dispatched.
+GQA_REMAP = [
+    ("""  Q += tidl.z * params->Q_strides[0] + // Batch
+      tidl.y * params->Q_strides[1] + // Head
+      tidl.x * BQ * params->Q_strides[2]; // Sequence
+
+  ulong kv_head_idx = int(tid.y) / params->gqa_factor;""",
+     """  const ulong lfm_qb = tidl.y;
+  const ulong lfm_head = tidl.z * params->gqa_factor + tidl.x;
+  Q += lfm_head * params->Q_strides[1] + // Head
+      lfm_qb * BQ * params->Q_strides[2]; // Sequence
+
+  ulong kv_head_idx = tidl.z;"""),
+    ("""  O += tidl.z * params->O_strides[0] + // Batch
+      tidl.y * params->O_strides[1] + // Head
+      tidl.x * BQ * params->O_strides[2]; // Sequence""",
+     """  O += lfm_head * params->O_strides[1] + // Head
+      lfm_qb * BQ * params->O_strides[2]; // Sequence"""),
+    ("sinks[tidl.y]", "sinks[lfm_head]"),
+    ("int q_max = (tid.x + 1) * BQ + params->qL_off;",
+     "int q_max = (lfm_qb + 1) * BQ + params->qL_off;"),
+    ("int q_min = tid.x * BQ + params->qL_off;",
+     "int q_min = lfm_qb * BQ + params->qL_off;"),
+    ("int(tid.x) == (params->NQ_aligned)", "int(lfm_qb) == (params->NQ_aligned)"),
+    ("const int base_row = tid.x * BQ + params->qL_off + tm;",
+     "const int base_row = lfm_qb * BQ + params->qL_off + tm;"),
+    ("const int base_row = tid.x * BQ + tm;",
+     "const int base_row = lfm_qb * BQ + tm;"),
+]
+
+
+def remap_gqa(body):
+    for old, new in GQA_REMAP:
+        count = body.count(old)
+        if count != 2:
+            raise SystemExit("GQA remap anchor found %d times, expected 2: %r" % (count, old[:60]))
+        body = body.replace(old, new)
+    return body
+
+
+def write(name, entry, prelude, instances, remap=False):
+    system_includes, body = flatten(entry, prelude)
+    if remap:
+        body = remap_gqa(body)
+    out = os.path.join(OUT_DIR, name)
+    with open(out, "w") as f:
+        f.write("// Generated by tools/gen_steel_attn.py from MLX 0.32.3 (MIT).\n")
+        f.write("// Do not edit by hand; edit the generator or the pinned headers.\n")
+        for line in system_includes:
+            f.write(line)
+        f.write("using namespace metal;\n")
+        f.write(body)
+        f.write(INST_TEMPLATE % {"instances": "\n".join(instances)})
+    print("wrote", out, os.path.getsize(out), "bytes")
+
+
+write(
+    "steel_attn_nax.metal",
+    "mlx/backend/metal/kernels/steel/attn/kernels/steel_attention_nax.h",
+    ["mlx/backend/metal/kernels/utils.h"],
+    [
+        "LFM_STEEL_NAX_BODY(lfm_steel_nax_bq64k32, 64, 32, 2, 2)",
+    ],
+    remap=True,
+)

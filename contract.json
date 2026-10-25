@@ -1,0 +1,25 @@
+{
+  "chunk_bytes": 262144,
+  "context_tokens": 131072,
+  "eos_policy": "continue",
+  "eos_token_ids": [
+    124900
+  ],
+  "greedy_tie": "lowest_token_id",
+  "head_dim": 64,
+  "kv_heads": 8,
+  "kv_layers": 10,
+  "max_checkpoint_bytes": 4096,
+  "max_checkpoints": 16,
+  "max_frame_bytes": 1048576,
+  "max_input_tokens": 131072,
+  "max_logits_rows": 32,
+  "max_output_tokens": 256,
+  "max_requests": 8192,
+  "max_tensor_bytes": 33554432,
+  "max_total_input_tokens": 1048576,
+  "max_total_output_tokens": 8192,
+  "model_identity_sha256": "c5a58e1ca62d2b850ca117c242d4d18cfec0abf2ec60a5134d2e10290d889082",
+  "state_profile_sha256": "3e9bee4eef4a31942dd7789666f8c015e88fcd29af45c7308886cbc1a60b7d20",
+  "vocab_size": 128000
+}

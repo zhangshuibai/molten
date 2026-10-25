@@ -1,0 +1,48 @@
+[package]
+name = "molten"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+license = "Apache-2.0"
+description = "Native Rust + Metal inference engine specialized for LiquidAI LFM2.5-24B-A2B (MLX 4-bit) on Apple Silicon"
+repository = "https://github.com/zhangshuibai/molten"
+publish = false
+
+[lib]
+name = "molten"
+path = "src/lib.rs"
+
+[[bin]]
+name = "molten"
+path = "src/main.rs"
+
+# Exact versions. The text layer (tokenizer, chat template) uses `tokenizers`
+# with the pure-Rust `fancy-regex` backend (default features off: no Oniguruma,
+# no esaxx C++, no progress bar, no HTTP client) and `minijinja` with
+# `minijinja-contrib`'s Python string and dict methods. Nothing in the build
+# compiles C or C++.
+[dependencies]
+anyhow = { version = "=1.0.104", features = ["backtrace"] }
+bytemuck = { version = "=1.25.2", features = ["extern_crate_alloc"] }
+half = { version = "=2.7.1", features = ["bytemuck"] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+tokenizers = { version = "=0.23.2", default-features = false, features = ["fancy-regex"] }
+minijinja = { version = "=2.24.0", default-features = false, features = ["builtins", "macros", "loop_controls", "preserve_order", "serde"] }
+minijinja-contrib = { version = "=2.24.0", default-features = false, features = ["pycompat"] }
+
+# Metal and the Objective-C runtime. The engine is macOS-only; `lib.rs` gates
+# every GPU module on `target_os = "macos"` so the crate still type-checks
+# elsewhere.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "=0.6.4"
+objc2-foundation = "=0.3.2"
+objc2-metal = "=0.3.2"
+
+[profile.release]
+# Lily's `lto = "thin"` is not used: with it, the executable's LC_UUID and code
+# signature depend on the length of the build-directory path, so builds of the
+# same tree in different directories give different bytes. With `lto = false`
+# the bytes do not depend on where the tree is built.
+lto = false
+codegen-units = 1

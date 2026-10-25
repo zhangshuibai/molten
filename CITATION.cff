@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use Molten in your work, please cite it as below."
+type: software
+title: "Molten: A Native Rust + Metal Inference Engine for LFM2.5 on Apple Silicon"
+abstract: >-
+  Molten is a native Rust + Metal inference engine for LiquidAI LFM2.5-24B-A2B (MLX 4-bit) on Apple M5-series
+  Macs, written by AI coding agents in a recursive self-improvement loop.
+authors:
+  - family-names: Zhang
+    given-names: Shuibai
+    email: szhang967@wisc.edu
+    website: "https://zhangshuibai.github.io/"
+version: 0.1.0
+date-released: 2026-10-25
+license: Apache-2.0
+url: "https://github.com/zhangshuibai/molten"
+repository-code: "https://github.com/zhangshuibai/molten"
+keywords:
+  - llm-inference
+  - apple-silicon
+  - metal
+  - rust
+  - recursive-self-improvement

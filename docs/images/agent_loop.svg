@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 350" width="960" height="350" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#868E96"/>
+    </marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2F9E44"/>
+    </marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#E03131"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="350" rx="16" fill="#FFFFFF"/>
+
+  <!-- accepted: back to the best engine -->
+  <path d="M855,58 C855,0 110,0 110,78" fill="none" stroke="#2F9E44" stroke-width="2.5" marker-end="url(#a-green)"/>
+  <text x="480" y="48" text-anchor="middle" font-size="16" font-weight="600" fill="#2F9E44">yes: new best engine</text>
+
+  <!-- rejected: into the feedback -->
+  <path d="M855,172 C855,335 345,335 345,298" fill="none" stroke="#E03131" stroke-width="2.5" marker-end="url(#a-red)"/>
+  <text x="790" y="300" text-anchor="middle" font-size="16" font-weight="600" fill="#E03131">no: rejected</text>
+
+  <!-- top row -->
+  <rect x="30" y="85" width="160" height="60" rx="14" fill="#F1F3F5" stroke="#ADB5BD" stroke-width="2"/>
+  <text x="110" y="121" text-anchor="middle" font-size="19" font-weight="600" fill="#212529">Best engine</text>
+
+  <rect x="250" y="85" width="190" height="60" rx="14" fill="#FFF4E6" stroke="#E8590C" stroke-width="2"/>
+  <text x="345" y="121" text-anchor="middle" font-size="19" font-weight="600" fill="#E8590C">Coding agent</text>
+
+  <rect x="500" y="85" width="230" height="60" rx="14" fill="#F1F3F5" stroke="#ADB5BD" stroke-width="2"/>
+  <text x="615" y="121" text-anchor="middle" font-size="19" font-weight="600" fill="#212529">Evaluate &amp; profile</text>
+
+  <polygon points="780,115 855,60 930,115 855,170" fill="#FFFFFF" stroke="#212529" stroke-width="2"/>
+  <text x="855" y="111" text-anchor="middle" font-size="16" font-weight="600" fill="#212529">correct</text>
+  <text x="855" y="131" text-anchor="middle" font-size="16" font-weight="600" fill="#212529">&amp; faster?</text>
+
+  <!-- bottom row -->
+  <rect x="250" y="232" width="190" height="60" rx="14" fill="#F1F3F5" stroke="#ADB5BD" stroke-width="2"/>
+  <text x="345" y="268" text-anchor="middle" font-size="19" font-weight="600" fill="#212529">Feedback</text>
+
+  <!-- forward arrows -->
+  <line x1="192" y1="115" x2="246" y2="115" stroke="#868E96" stroke-width="2.5" marker-end="url(#a-grey)"/>
+  <line x1="442" y1="115" x2="496" y2="115" stroke="#868E96" stroke-width="2.5" marker-end="url(#a-grey)"/>
+  <line x1="732" y1="115" x2="776" y2="115" stroke="#868E96" stroke-width="2.5" marker-end="url(#a-grey)"/>
+  <path d="M615,147 L615,262 L444,262" fill="none" stroke="#868E96" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#a-grey)"/>
+  <line x1="345" y1="230" x2="345" y2="149" stroke="#868E96" stroke-width="2.5" marker-end="url(#a-grey)"/>
+</svg>
