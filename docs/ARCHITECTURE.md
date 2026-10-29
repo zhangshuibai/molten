@@ -7,12 +7,14 @@ serving, and where the time goes. See [BENCHMARKS.md](BENCHMARKS.md) for the mea
   - 30 double-gated short-convolution layers and 10 GQA attention layers (Q/K RMSNorm, NeoX RoPE).
   - Two dense lead layers, then 38 MoE layers: 64 experts, top-4 sigmoid routing with a selection bias.
   - A 6-bit tied embedding/LM head.
-  - Weights are memory-mapped from the safetensors shards and used in place, in MLX's affine 4-bit/64 layout.
+  - Weights are read from the safetensors shards into GPU buffers once at load, unconverted, in MLX's affine
+    4-bit/64 layout.
 - **Prefill.** It uses the reference's chunk partition. The grouped expert GEMMs and causal flash attention are
   adapted from MLX's steel/NAX kernels. The four query heads of a KV head share K/V tiles.
 - **Decode** is one GPU-resident loop. Tokens never leave the GPU between steps: the argmax of step t feeds the
   embedding gather of step t+1. The host encodes steps ahead in batches and waits once per request.
-  One token takes about 262 dependent dispatches (down from about 355). The main fusions:
+  One token takes about 252 dependent dispatches below 8,192 tokens of context and 272 from there on (down from
+  about 355). The main fusions:
   - The residual add + RMSNorm is fused into the F32 router GEMV. The top-4 routing runs in the router's
     last-finishing threadgroup, using an atomic counter and device-scope fences with no inter-threadgroup waiting.
   - The routed experts' gate/up/SiLU and down/combine each run in one gather kernel.

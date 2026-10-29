@@ -84,13 +84,12 @@ Molten serves one model, on one kind of GPU, one sequence at a time. That lets i
 cannot:
 
 - **Model-specific kernel fusion.** Chains of small operators run as single kernels: norm + router + top-4 expert
-  selection, expert FFN + weighted combine, Q/K norm + RoPE + attention, LM head + argmax. Each token takes about a
-  quarter fewer GPU dispatches.
+  selection, expert FFN + weighted combine, Q/K norm + RoPE + attention, LM head + argmax. Each token takes about
+  30% fewer GPU dispatches.
 - **A decode loop that never leaves the GPU.** Generated tokens feed the next step on the GPU. The CPU encodes
   steps ahead and the GPU stays busy 99% of the time.
 - **Kernels for fixed shapes.** Every dimension is a compile-time constant, and the quantized matrix-vector kernels
   stream the 4-bit weights close to the memory bandwidth limit.
-- **Zero-copy weights.** The official checkpoint is memory-mapped and used in place.
 - **Fast prefill.** The prefill kernels use the M5 GPU's matrix units, and query heads that share a KV head share
   its K/V tiles.
 

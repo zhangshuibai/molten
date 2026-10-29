@@ -888,7 +888,10 @@ pub fn token_tail(
 }
 
 /// Length at which L=1 attention switches from the single-pass vector kernel
-/// to the blocked two-pass form the reference uses for long contexts.
+/// to the blocked two-pass form the reference uses for long contexts. The
+/// reference switches earlier (4096 keys for GQA, 1024 on GPUs whose
+/// architecture name ends in 'd' or 's'), so between those lengths and this
+/// one the rounding differs from the reference's within the correctness gates.
 pub const SDPA_2PASS_MIN_LEN: usize = 8_192;
 /// Sequence blocks in the two-pass L=1 attention (a multiple of 32).
 pub const SDPA_2PASS_BLOCKS: usize = 512;

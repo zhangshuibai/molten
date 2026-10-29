@@ -1773,7 +1773,9 @@ kernel void lfm_moe_blocks_parallel(device const uint* counts  [[buffer(0)]],
 // Single-token attention with the reference's sdpa_vector arithmetic
 // (MLX 0.32.3 sdpa_vector for D=64: two values per lane, 32 simdgroups,
 // online FP32 softmax, FP32 output accumulation). The reference uses this
-// kernel for every L=1 call, so the last prompt token and every decode step
+// kernel for L=1 calls below its two-pass threshold (4096 keys for GQA, or
+// 1024 on GPUs whose architecture name ends in 'd' or 's'); the engine uses
+// it below SDPA_2PASS_MIN_LEN, so the last prompt token and the decode steps
 // take it instead of the tensor-op prefill tile.
 kernel void lfm_sdpa_vector_bf16(device const bfloat* q       [[buffer(0)]],
                                  device const bfloat* k_cache [[buffer(1)]],
